@@ -51,6 +51,8 @@ typedef struct {
     float x, y, w, h;
 } Cubc_Rect;
 
+Cubc_Canvas Cubc_CanvasFromImage(const char* file_name);
+
 void Cubc_CanvasClear(Cubc_Canvas* canvas, Cubc_Color color);
 
 void Cubc_CanvasPixel(Cubc_Canvas* canvas, uint32_t x, uint32_t y,
@@ -93,6 +95,28 @@ void Cubc_CanvasRectR(Cubc_Canvas* canvas, Cubc_Rect rect, Cubc_Color color);
     }
 
 #ifdef CUBC_IMPLEMENTATION
+#define STB_IMAGE_IMPLEMENTATION
+#include "stb_image.h"
+
+Cubc_Canvas Cubc_CanvasFromImage(const char* file_name) {
+    int x, y, comp;
+    uint8_t* img_data  = stbi_load(file_name, &x, &y, &comp, 4);
+    Cubc_Canvas canvas = {
+        .w      = x,
+        .h      = y,
+        .pixels = malloc(sizeof(uint32_t) * x * y),
+    };
+    int m = 0;
+    for (int i = 0; i < x * y * 4; i += 4) {
+        uint8_t r        = img_data[i + 3];
+        uint8_t g        = img_data[i + 2];
+        uint8_t b        = img_data[i + 1];
+        uint8_t a        = img_data[i];
+        canvas.pixels[m] = r | (g << 8) | (b << 16) | (a << 24);
+        m++;
+    }
+    return canvas;
+}
 
 void Cubc_CanvasClear(Cubc_Canvas* canvas, Cubc_Color color) {
     for (int i = 0; i < canvas->w * canvas->h; i++) {
