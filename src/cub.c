@@ -53,6 +53,16 @@ typedef struct {
 
 Cubc_Canvas Cubc_CanvasFromImage(const char* file_name);
 
+void Cubc_CanvasBlitCanvas(Cubc_Canvas* dest, const Cubc_Canvas* src,
+                           uint32_t x, uint32_t y, float scale_x,
+                           float scale_y);
+
+void Cubc_CanvasBlitCanvasV(Cubc_Canvas* dest, const Cubc_Canvas* src,
+                            Cubc_V2u pos, Cubc_V2f scale);
+
+void Cubc_CanvasBlitCanvasR(Cubc_Canvas* dest, const Cubc_Canvas* src,
+                            Cubc_Rect rect);
+
 void Cubc_CanvasClear(Cubc_Canvas* canvas, Cubc_Color color);
 
 void Cubc_CanvasPixel(Cubc_Canvas* canvas, uint32_t x, uint32_t y,
@@ -116,6 +126,43 @@ Cubc_Canvas Cubc_CanvasFromImage(const char* file_name) {
         m++;
     }
     return canvas;
+}
+
+void Cubc_CanvasBlitCanvas(Cubc_Canvas* dest, const Cubc_Canvas* src,
+                           uint32_t x, uint32_t y, float scale_x,
+                           float scale_y) {
+    for (uint32_t dest_y = 0; dest_y < (uint32_t) (src->h * scale_y);
+         dest_y++) {
+        for (uint32_t dest_x = 0; dest_x < (uint32_t) (src->w * scale_x);
+             dest_x++) {
+            uint32_t src_x = (uint32_t) (dest_x / scale_x);
+            uint32_t src_y = (uint32_t) (dest_y / scale_y);
+
+            if (src_x >= src->w || src_y >= src->h) {
+                continue;
+            }
+
+            uint32_t dest_pos_x = x + dest_x;
+            uint32_t dest_pos_y = y + dest_y;
+
+            if (dest_pos_x >= dest->w || dest_pos_y >= dest->h) {
+                continue;
+            }
+
+            Cubc_CanvasPixel(dest, dest_pos_x, dest_pos_y,
+                             (Cubc_Color) CUBC_CANVAS_AT(*src, src_x, src_y));
+        }
+    }
+}
+
+void Cubc_CanvasBlitCanvasV(Cubc_Canvas* dest, const Cubc_Canvas* src,
+                            Cubc_V2u pos, Cubc_V2f scale) {
+    Cubc_CanvasBlitCanvas(dest, src, pos.x, pos.y, scale.x, scale.y);
+}
+
+void Cubc_CanvasBlitCanvasR(Cubc_Canvas* dest, const Cubc_Canvas* src,
+                            Cubc_Rect rect) {
+    Cubc_CanvasBlitCanvas(dest, src, rect.x, rect.y, rect.w, rect.h);
 }
 
 void Cubc_CanvasClear(Cubc_Canvas* canvas, Cubc_Color color) {
