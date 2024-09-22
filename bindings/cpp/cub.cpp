@@ -15,7 +15,14 @@ namespace Cubc {
             uint8_t b;
             uint8_t a;
         };
-        Cubc_Color CRepr() { return {color}; }
+
+    public:
+        Cubc_Color CRepr() const { return {color}; }
+        Cubc_Color Multiply(const Color& other) const;
+        Cubc_Color Screen(const Color& other) const;
+        Cubc_Color Overlay(const Color& other) const;
+        Cubc_Color HardLight(const Color& other) const;
+        Cubc_Color SoftLight(const Color& other) const;
     };
 
     constexpr Color Black = {.color = 0x000000ff};
@@ -92,6 +99,23 @@ namespace Cubc {
 #ifdef CUBC_IMPLEMENTATION
 namespace Cubc {
 #include "../../src/cub.c"
+
+    Cubc_Color Color::Multiply(const Color& other) const {
+        return Cubc_ColorMultiplyBlend(CRepr(), other.CRepr());
+    }
+    Cubc_Color Color::Screen(const Color& other) const {
+        return Cubc_ColorScreenBlend(CRepr(), other.CRepr());
+    }
+    Cubc_Color Color::Overlay(const Color& other) const {
+        return Cubc_ColorOverlayBlend(CRepr(), other.CRepr());
+    }
+    Cubc_Color Color::HardLight(const Color& other) const {
+        return Cubc_ColorHardLightBlend(CRepr(), other.CRepr());
+    }
+    Cubc_Color Color::SoftLight(const Color& other) const {
+        return Cubc_ColorSoftLightBlend(CRepr(), other.CRepr());
+    }
+
     Canvas::Canvas(size_t w, size_t h, Color c) : w(w), h(h) {
         pixels = new uint32_t[w * h];
         for (int i = 0; i < w * h; i++) {

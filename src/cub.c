@@ -127,7 +127,7 @@ Cubc_Color Cubc_ColorSoftLightBlend(Cubc_Color a, Cubc_Color b);
         y              = temp;                                                 \
     }
 
-#ifndef CUBC_IMPLEMENTATION
+#ifdef CUBC_IMPLEMENTATION
 #define STB_IMAGE_IMPLEMENTATION
 #include "stb_image.h"
 
