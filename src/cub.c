@@ -10,7 +10,7 @@ typedef struct {
     size_t w, h;
 } Cubc_Canvas;
 
-typedef union {
+typedef union Cubc_Color {
     uint32_t color;
     struct {
         uint8_t r;
@@ -18,6 +18,16 @@ typedef union {
         uint8_t b;
         uint8_t a;
     };
+#ifdef __cplusplus
+    Cubc_Color() { color = 0; }
+    Cubc_Color(uint32_t num) { color = num; }
+    Cubc_Color(uint8_t r, uint8_t g, uint8_t b, uint8_t a) {
+        this->r = r;
+        this->g = g;
+        this->b = b;
+        this->a = a;
+    }
+#endif
 } Cubc_Color;
 
 #define CC_BLACK                                                               \
@@ -114,9 +124,9 @@ Cubc_Canvas Cubc_CanvasFromImage(const char* file_name) {
     int x, y, comp;
     uint8_t* img_data  = stbi_load(file_name, &x, &y, &comp, 4);
     Cubc_Canvas canvas = {
+        .pixels = (uint32_t*) malloc(sizeof(uint32_t) * x * y),
         .w      = x,
         .h      = y,
-        .pixels = malloc(sizeof(uint32_t) * x * y),
     };
     int m = 0;
     for (int i = 0; i < x * y * 4; i += 4) {
@@ -299,11 +309,22 @@ void Cubc_CanvasRectR(Cubc_Canvas* canvas, Cubc_Rect rect, Cubc_Color color) {
 }
 
 Cubc_Color Cubc_ColorBlend(Cubc_Color src, Cubc_Color dest) {
-    return (Cubc_Color){
-        .r = src.r * src.a + dest.r * (1 - dest.a),
-        .g = src.g * src.a + dest.g * (1 - dest.a),
-        .b = src.b * src.a + dest.b * (1 - dest.a),
+#ifdef __cplusplus
+    return Cubc_Color{
+        src.r * src.a + dest.r * (1 - dest.a),
+        src.g * src.a + dest.g * (1 - dest.a),
+        src.b * src.a + dest.b * (1 - dest.a),
+        src.a,
     };
+#else
+    return (Cubc_Color){
+        src.r * src.a + dest.r * (1 - dest.a),
+        src.g * src.a + dest.g * (1 - dest.a),
+        src.b * src.a + dest.b * (1 - dest.a),
+        src.a,
+    };
+
+#endif
 }
 
 #endif
