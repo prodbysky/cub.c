@@ -95,6 +95,8 @@ void Cubc_CanvasRectV(Cubc_Canvas* canvas, Cubc_V2f pos, Cubc_V2f size,
                       Cubc_Color color);
 void Cubc_CanvasRectR(Cubc_Canvas* canvas, Cubc_Rect rect, Cubc_Color color);
 
+Cubc_Color Cubc_ColorBlend(Cubc_Color src, Cubc_Color dest);
+
 #define CUBC_CANVAS_AT(canvas, x, y) (canvas).pixels[(x) + (y) * (canvas).w]
 
 #define SWAP(x, y)                                                             \
@@ -294,6 +296,14 @@ void Cubc_CanvasRectV(Cubc_Canvas* canvas, Cubc_V2f pos, Cubc_V2f size,
 }
 void Cubc_CanvasRectR(Cubc_Canvas* canvas, Cubc_Rect rect, Cubc_Color color) {
     Cubc_CanvasRect(canvas, rect.x, rect.y, rect.w, rect.h, color);
+}
+
+Cubc_Color Cubc_ColorBlend(Cubc_Color src, Cubc_Color dest) {
+    return (Cubc_Color){
+        .r = src.r * src.a + dest.r * (1 - dest.a),
+        .g = src.g * src.a + dest.g * (1 - dest.a),
+        .b = src.b * src.a + dest.b * (1 - dest.a),
+    };
 }
 
 #endif
