@@ -30,6 +30,12 @@ typedef union Cubc_Color {
 #endif
 } Cubc_Color;
 
+#if defined(__cplusplus)
+#define CLITERAL(type) type
+#else
+#define CLITERAL(type) (type)
+#endif
+
 #define CC_BLACK                                                               \
     (Cubc_Color) { .color = 0x000000ff }
 
@@ -106,7 +112,11 @@ void Cubc_CanvasRectV(Cubc_Canvas* canvas, Cubc_V2f pos, Cubc_V2f size,
                       Cubc_Color color);
 void Cubc_CanvasRectR(Cubc_Canvas* canvas, Cubc_Rect rect, Cubc_Color color);
 
-Cubc_Color Cubc_ColorBlend(Cubc_Color src, Cubc_Color dest);
+Cubc_Color Cubc_ColorMultiplyBlend(Cubc_Color a, Cubc_Color b);
+Cubc_Color Cubc_ColorScreenBlend(Cubc_Color a, Cubc_Color b);
+Cubc_Color Cubc_ColorOverlayBlend(Cubc_Color a, Cubc_Color b);
+Cubc_Color Cubc_ColorHardLightBlend(Cubc_Color a, Cubc_Color b);
+Cubc_Color Cubc_ColorSoftLightBlend(Cubc_Color a, Cubc_Color b);
 
 #define CUBC_CANVAS_AT(canvas, x, y) (canvas).pixels[(x) + (y) * (canvas).w]
 
@@ -117,7 +127,7 @@ Cubc_Color Cubc_ColorBlend(Cubc_Color src, Cubc_Color dest);
         y              = temp;                                                 \
     }
 
-#ifdef CUBC_IMPLEMENTATION
+#ifndef CUBC_IMPLEMENTATION
 #define STB_IMAGE_IMPLEMENTATION
 #include "stb_image.h"
 
@@ -310,22 +320,69 @@ void Cubc_CanvasRectR(Cubc_Canvas* canvas, Cubc_Rect rect, Cubc_Color color) {
 }
 
 Cubc_Color Cubc_ColorBlend(Cubc_Color src, Cubc_Color dest) {
-#ifdef __cplusplus
-    return Cubc_Color{
+    return CLITERAL(Cubc_Color){
         src.r * src.a + dest.r * (1 - dest.a),
         src.g * src.a + dest.g * (1 - dest.a),
         src.b * src.a + dest.b * (1 - dest.a),
         src.a,
     };
-#else
-    return (Cubc_Color){
-        src.r * src.a + dest.r * (1 - dest.a),
-        src.g * src.a + dest.g * (1 - dest.a),
-        src.b * src.a + dest.b * (1 - dest.a),
-        src.a,
-    };
+}
 
-#endif
+Cubc_Color Cubc_ColorMultiplyBlend(Cubc_Color a, Cubc_Color b) {
+    return CLITERAL(Cubc_Color){
+        .r = a.r * b.r,
+        .g = a.g * b.g,
+        .b = a.b * b.b,
+        .a = a.a * b.a,
+    };
+}
+Cubc_Color Cubc_ColorScreenBlend(Cubc_Color a, Cubc_Color b) {
+    return CLITERAL(Cubc_Color){
+        .r = 1 - (1 - a.r) * (1 - b.r),
+        .g = 1 - (1 - a.g) * (1 - b.g),
+        .b = 1 - (1 - a.b) * (1 - b.b),
+        .a = 1 - (1 - a.a) * (1 - b.a),
+    };
+}
+Cubc_Color Cubc_ColorOverlayBlend(Cubc_Color a, Cubc_Color b) {
+    if (a.color / (float) 0xffffffff < 0.5) {
+        return CLITERAL(Cubc_Color){
+            .r = 2 * a.r * b.r,
+            .g = 2 * a.g * b.g,
+            .b = 2 * a.b * b.b,
+            .a = 2 * a.a * b.a,
+        };
+    }
+    return CLITERAL(Cubc_Color){
+        .r = 1 - 2 * (1 - a.r) * (1 - b.r),
+        .g = 1 - 2 * (1 - a.g) * (1 - b.g),
+        .b = 1 - 2 * (1 - a.b) * (1 - b.b),
+        .a = 1 - 2 * (1 - a.a) * (1 - b.a),
+    };
+}
+Cubc_Color Cubc_ColorHardLightBlend(Cubc_Color a, Cubc_Color b) {
+    if (b.color / (float) 0xffffffff < 0.5) {
+        return CLITERAL(Cubc_Color){
+            .r = 2 * a.r * b.r,
+            .g = 2 * a.g * b.g,
+            .b = 2 * a.b * b.b,
+            .a = 2 * a.a * b.a,
+        };
+    }
+    return CLITERAL(Cubc_Color){
+        .r = 1 - 2 * (1 - a.r) * (1 - b.r),
+        .g = 1 - 2 * (1 - a.g) * (1 - b.g),
+        .b = 1 - 2 * (1 - a.b) * (1 - b.b),
+        .a = 1 - 2 * (1 - a.a) * (1 - b.a),
+    };
+}
+Cubc_Color Cubc_ColorSoftLightBlend(Cubc_Color a, Cubc_Color b) {
+    return CLITERAL(Cubc_Color){
+        .r = a.r * a.r * (1 - b.r) + 2 * b.r * a.r,
+        .g = a.g * a.g * (1 - b.g) + 2 * b.g * a.g,
+        .b = a.b * a.b * (1 - b.b) + 2 * b.b * a.b,
+        .a = a.a * a.a * (1 - b.a) + 2 * b.a * a.a,
+    };
 }
 
 #endif
