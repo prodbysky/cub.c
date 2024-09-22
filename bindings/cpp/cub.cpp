@@ -3,7 +3,6 @@
 
 #include "../../src/cub.c"
 
-#include <algorithm>
 #include <cstdint>
 #include <cstdlib>
 namespace Cubc {
@@ -45,6 +44,7 @@ namespace Cubc {
     public:
         Canvas(size_t w = 1280, size_t h = 720, Color c = Black);
         Canvas(const char* file_name);
+        ~Canvas();
 
         void BlitCanvas(const Canvas& src, uint32_t x = 0, uint32_t y = 0,
                         float scale_x = 1.0, float scale_y = 1.0);
@@ -104,6 +104,7 @@ namespace Cubc {
         h                  = canvas.h;
         pixels             = canvas.pixels;
     }
+    Canvas::~Canvas() { free(pixels); }
     void Canvas::Clear(Color c) {
         for (int i = 0; i < w * h; i++) {
             pixels[i] = c.color;
