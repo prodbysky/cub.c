@@ -101,6 +101,7 @@ void Cubc_CanvasTriangleV(Cubc_Canvas* canvas, Cubc_V2u pos0, Cubc_V2u pos1,
 
 void Cubc_CanvasRect(Cubc_Canvas* canvas, uint32_t x, uint32_t y, uint32_t w,
                      uint32_t h, Cubc_Color color);
+
 void Cubc_CanvasRectV(Cubc_Canvas* canvas, Cubc_V2f pos, Cubc_V2f size,
                       Cubc_Color color);
 void Cubc_CanvasRectR(Cubc_Canvas* canvas, Cubc_Rect rect, Cubc_Color color);
